@@ -9,17 +9,26 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@hookform/resolvers": "^5.2.2",
+    "@mui/material": "^7.3.2",
+    "@mui/material-nextjs": "^7.3.2",
+    "@tanstack/react-query": "^5.89.0",
+    "framer-motion": "^12.23.13",
+    "next": "15.5.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "next": "15.5.3"
+    "react-hook-form": "^7.62.0",
+    "yup": "^1.7.0"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@eslint/eslintrc": "^3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.5.3",
-    "@eslint/eslintrc": "^3"
+    "typescript": "^5"
   }
 }
