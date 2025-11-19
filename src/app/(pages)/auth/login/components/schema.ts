@@ -8,10 +8,9 @@ export interface LoginFormData {
 export const loginSchema = yup.object({
     emailOrNikOrNim: yup
         .string()
-        .email("Format email tidak valid")
-        .required("Email wajib diisi"),
+        .required("Email atau NIK/NIM wajib diisi"),
     password: yup
         .string()
-        .min(6, "Password minimal 6 karakter")
+        .min(4, "Password minimal 6 karakter")
         .required("Password wajib diisi"),
 });

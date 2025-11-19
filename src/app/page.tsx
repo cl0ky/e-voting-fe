@@ -4,7 +4,7 @@ import { Box } from "@mui/material";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import blockchainVoting from "@/assets/img/blockchain-voting.png";
-import ServerRedirect from "./components/server-redirect";
+import RoleRedirect from "./components/role-redirect";
 
 export default function Home() {
   return (
@@ -41,7 +41,7 @@ export default function Home() {
         </motion.div>
       </Box>
 
-      <ServerRedirect href='/auth/register' />
+      <RoleRedirect />
     </>
   );
 }
