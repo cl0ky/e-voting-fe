@@ -7,6 +7,8 @@ import CandidateForm from "./components/CandidateForm";
 import CandidateDeleteDialog from "./components/CandidateDeleteDialog";
 import type { Candidate } from "./types";
 import type { CandidateFormValues } from "./schema";
+import { createCandidate } from "./api";
+import { getAxiosErrorMessage } from "@/utils/getAxiosErrorMessage";
 import { useToast } from "@/providers/toast-provider";
 
 export default function AdminCandidatesPage() {
@@ -14,7 +16,7 @@ export default function AdminCandidatesPage() {
 
   // Local state demo — replace with API calls later
   const [items, setItems] = useState<Candidate[]>([]);
-  const [loading] = useState(false); // reserved for future API wiring
+  const [loading, setLoading] = useState(false);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
 
   const [openForm, setOpenForm] = useState(false);
@@ -52,13 +54,18 @@ export default function AdminCandidatesPage() {
       } : i));
       toast.success('Kandidat diperbarui');
     } else {
-      // Create new (replace with API later)
-      const id = crypto?.randomUUID ? crypto.randomUUID() : String(Date.now());
-      setItems(prev => [{ id, name: values.name, vision: values.vision, mission: values.mission, year: values.year }, ...prev]);
-      toast.success('Kandidat ditambahkan');
+      setLoading(true);
+      try {
+        await createCandidate(values);
+        toast.success('Kandidat ditambahkan');
+        setOpenForm(false);
+        setEditing(null);
+      } catch (err) {
+        toast.error(getAxiosErrorMessage(err));
+      } finally {
+        setLoading(false);
+      }
     }
-    setOpenForm(false);
-    setEditing(null);
   };
 
   const onConfirmDelete = async () => {
