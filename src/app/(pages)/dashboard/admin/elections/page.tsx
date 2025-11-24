@@ -1,29 +1,36 @@
 "use client";
 
 import { Box, Button, Stack, Typography } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ElectionsTable from "./components/ElectionsTable";
 import ElectionFormDialog from "./components/ElectionFormDialog";
+import { getElections, Election } from "./api";
+
+
 
 export default function AdminElectionsPage() {
   const [openForm, setOpenForm] = useState(false);
-  // Dummy data
-  const elections = [
-    {
-      year: 2025,
-      name: "Pemilihan Ketua RT 2025",
-      status: "pending" as const,
-      start: "01/12",
-      end: "02/12",
-    },
-    {
-      year: 2024,
-      name: "Pemilihan Ketua RT 2024",
-      status: "ended" as const,
-      start: "01/12",
-      end: "02/12",
-    },
-  ];
+  const [elections, setElections] = useState<Election[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchElections = () => {
+    setLoading(true);
+    getElections()
+      .then((data) => {
+        setElections(data);
+        setError(null);
+      })
+      .catch(() => {
+        setError("Gagal memuat data pemilihan");
+      })
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchElections();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Box>
@@ -31,8 +38,23 @@ export default function AdminElectionsPage() {
         <Typography variant="h5">🗳️ Pemilihan</Typography>
         <Button variant="contained" onClick={() => setOpenForm(true)}>Buat Pemilihan</Button>
       </Stack>
-      <ElectionsTable elections={elections} />
-      <ElectionFormDialog open={openForm} onClose={() => setOpenForm(false)} />
+      {loading ? (
+        <Typography>Memuat data...</Typography>
+      ) : error ? (
+        <Typography color="error">{error}</Typography>
+      ) : (
+        <ElectionsTable
+          elections={elections?.map(e => ({
+            id: e.id,
+            year: e.year,
+            name: e.name,
+            status: e.status,
+            start: e.start_at ? new Date(e.start_at).toLocaleDateString("id-ID") : "",
+            end: e.end_at ? new Date(e.end_at).toLocaleDateString("id-ID") : "",
+          }))}
+        />
+      )}
+  <ElectionFormDialog open={openForm} onClose={() => setOpenForm(false)} onSuccess={fetchElections} />
     </Box>
   );
 }

@@ -2,9 +2,10 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper
 import Link from "next/link";
 
 type Election = {
+  id: number;
   year: number;
   name: string;
-  status: "pending" | "ended";
+  status: "active" | "ended";
   start: string;
   end: string;
 };
@@ -36,7 +37,7 @@ export default function ElectionsTable({ elections }: { elections: Election[] })
                   size="small"
                   variant="outlined"
                   component={Link}
-                  href={`/dashboard/admin/elections/${election.year}`}
+                  href={`/dashboard/admin/elections/${election.id}`}
                 >
                   Detail
                 </Button>

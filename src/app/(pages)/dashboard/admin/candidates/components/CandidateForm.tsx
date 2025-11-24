@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useForm, type Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Box, Button, Stack, TextField, Typography, Avatar } from '@mui/material';
+import { Box, Button, Stack, TextField, Typography, Avatar, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { candidateSchema, type CandidateFormValues } from '../schema';
+import { getRTs, RT } from '@/lib/api/rt';
 
 export type CandidateFormProps = {
   title?: string;
@@ -15,6 +16,8 @@ export type CandidateFormProps = {
 };
 
 export default function CandidateForm({ title = 'Kandidat', initialValues, loading, onSubmit, onCancel }: CandidateFormProps) {
+  const [rts, setRts] = useState<RT[]>([]);
+  const [loadingRts, setLoadingRts] = useState(false);
   const {
     register,
     handleSubmit,
@@ -30,8 +33,14 @@ export default function CandidateForm({ title = 'Kandidat', initialValues, loadi
       mission: initialValues?.mission ?? '',
       photoFile: initialValues?.photoFile ?? null,
       year: (initialValues?.year as number | undefined) ?? new Date().getFullYear(),
+      electionId: initialValues?.electionId ?? '',
     },
   });
+
+  useEffect(() => {
+    setLoadingRts(true);
+    getRTs().then(setRts).catch(() => setRts([])).finally(() => setLoadingRts(false));
+  }, []);
 
   const [previewUrl, setPreviewUrl] = useState<string | undefined>(initialValues?.photoUrl);
 
@@ -42,6 +51,7 @@ export default function CandidateForm({ title = 'Kandidat', initialValues, loadi
       mission: initialValues?.mission ?? '',
       photoFile: null,
       year: (initialValues?.year as number | undefined) ?? new Date().getFullYear(),
+      electionId: initialValues?.electionId ?? '',
     });
     setPreviewUrl(initialValues?.photoUrl);
     // eslint-disable-next-line react-hooks/exhaustive-deps

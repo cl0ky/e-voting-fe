@@ -19,4 +19,5 @@ export type CandidateFormValues = {
   mission?: string;
   photoFile?: File | null;
   year: number;
+  electionId?: string;
 };
