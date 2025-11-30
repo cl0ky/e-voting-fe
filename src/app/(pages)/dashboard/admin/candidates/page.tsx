@@ -7,12 +7,22 @@ import CandidateForm from "./components/CandidateForm";
 import CandidateDeleteDialog from "./components/CandidateDeleteDialog";
 import type { Candidate } from "./types";
 import type { CandidateFormValues } from "./schema";
-import { createCandidate } from "./api";
+import { createCandidate, deleteCandidate, editCandidate } from "./api";
 import { getAxiosErrorMessage } from "@/utils/getAxiosErrorMessage";
 import { useToast } from "@/providers/toast-provider";
 import { getElections, type Election } from "../elections/api";
 import { axiosPrivate } from "@/lib/axios";
 
+type CandidateFromApi = {
+  id: string;
+  name: string;
+  vision?: string;
+  mission?: string;
+  photo_url?: string;
+  year?: number;
+  election_id: string;
+  rt_id?: string;
+};
 
 export default function AdminCandidatesPage() {
   const toast = useToast();
@@ -37,11 +47,20 @@ export default function AdminCandidatesPage() {
       setLoading(true);
       axiosPrivate.get(`/candidates/election/${selectedElectionId}`)
         .then(res => {
-          if (Array.isArray(res.data)) {
-            setItems(res.data);
-          } else {
-            setItems([]);
-          }
+          const arr: CandidateFromApi[] = Array.isArray(res.data.items) ? res.data.items : [];
+          const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6970';
+          setItems(arr.map((c) => ({
+            id: c.id,
+            name: c.name,
+            vision: c.vision,
+            mission: c.mission,
+            photoUrl: c.photo_url
+              ? (c.photo_url.startsWith('http') ? c.photo_url : `${BASE_URL}${c.photo_url}`)
+              : undefined,
+            year: c.year ?? 0,
+            electionId: c.election_id,
+            rtId: c.rt_id ?? '',
+          })));
         })
         .catch(() => setItems([]))
         .finally(() => setLoading(false));
@@ -71,22 +90,54 @@ export default function AdminCandidatesPage() {
       electionId: selectedElectionId !== "" ? selectedElectionId : undefined,
     };
     if (editing) {
-      setItems(prev => prev.map(i => i.id === editing.id ? {
-        ...i,
-        name: submitValues.name,
-        vision: submitValues.vision,
-        mission: submitValues.mission,
-        year: submitValues.year,
-        electionId: submitValues.electionId || '',
-      } : i));
-      toast.success('Kandidat diperbarui');
+      setLoading(true);
+      try {
+        await editCandidate(editing.id, submitValues);
+        if (selectedElectionId) {
+          const res = await axiosPrivate.get(`/candidates/election/${selectedElectionId}`);
+          const arr: CandidateFromApi[] = Array.isArray(res.data.items) ? res.data.items : [];
+          const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6970';
+          setItems(arr.map((c) => ({
+            id: c.id,
+            name: c.name,
+            vision: c.vision,
+            mission: c.mission,
+            photoUrl: c.photo_url
+              ? (c.photo_url.startsWith('http') ? c.photo_url : `${BASE_URL}${c.photo_url}`)
+              : undefined,
+            year: c.year ?? 0,
+            electionId: c.election_id,
+            rtId: c.rt_id ?? '',
+          })));
+        }
+        toast.success('Kandidat diperbarui');
+        setOpenForm(false);
+        setEditing(null);
+      } catch (err) {
+        toast.error(getAxiosErrorMessage(err));
+      } finally {
+        setLoading(false);
+      }
     } else {
       setLoading(true);
       try {
         await createCandidate(submitValues);
         if (selectedElectionId) {
           const res = await axiosPrivate.get(`/candidates/election/${selectedElectionId}`);
-          setItems(Array.isArray(res.data) ? res.data : []);
+          const arr: CandidateFromApi[] = Array.isArray(res.data.items) ? res.data.items : [];
+          const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6970';
+          setItems(arr.map((c) => ({
+            id: c.id,
+            name: c.name,
+            vision: c.vision,
+            mission: c.mission,
+            photoUrl: c.photo_url
+              ? (c.photo_url.startsWith('http') ? c.photo_url : `${BASE_URL}${c.photo_url}`)
+              : undefined,
+            year: c.year ?? 0,
+            electionId: c.election_id,
+            rtId: c.rt_id ?? '',
+          })));
         }
         toast.success('Kandidat ditambahkan');
         setOpenForm(false);
@@ -103,8 +154,27 @@ export default function AdminCandidatesPage() {
     if (!deleteId) return;
     setConfirmingDelete(true);
     try {
-      setItems(prev => prev.filter(i => i.id !== deleteId));
+      await deleteCandidate(deleteId);
+      if (selectedElectionId) {
+        const res = await axiosPrivate.get(`/candidates/election/${selectedElectionId}`);
+        const arr: CandidateFromApi[] = Array.isArray(res.data.items) ? res.data.items : [];
+        const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6970';
+        setItems(arr.map((c) => ({
+          id: c.id,
+          name: c.name,
+          vision: c.vision,
+          mission: c.mission,
+          photoUrl: c.photo_url
+            ? (c.photo_url.startsWith('http') ? c.photo_url : `${BASE_URL}${c.photo_url}`)
+            : undefined,
+          year: c.year ?? 0,
+          electionId: c.election_id,
+          rtId: c.rt_id ?? '',
+        })));
+      }
       toast.success('Kandidat dihapus');
+    } catch (err) {
+      toast.error(getAxiosErrorMessage(err));
     } finally {
       setConfirmingDelete(false);
       setDeleteId(null);
@@ -160,7 +230,6 @@ export default function AdminCandidatesPage() {
               mission: editing?.mission,
               photoFile: null,
               photoUrl: editing?.photoUrl,
-              year: editing?.year ?? new Date().getFullYear(),
               electionId: editing?.electionId || (selectedElectionId !== "" ? selectedElectionId : undefined),
             }}
             onSubmit={onSubmit}

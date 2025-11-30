@@ -24,7 +24,6 @@ export default function CandidateTable({ items, loading, onEdit, onDelete }: Can
           <TableRow>
             <TableCell>Foto</TableCell>
             <TableCell>Nama</TableCell>
-            <TableCell>Tahun</TableCell>
             <TableCell>Visi</TableCell>
             <TableCell>Misi</TableCell>
             <TableCell align="right">Aksi</TableCell>
@@ -36,7 +35,6 @@ export default function CandidateTable({ items, loading, onEdit, onDelete }: Can
               <TableRow key={i}>
                 <TableCell><Skeleton variant="circular" width={32} height={32} /></TableCell>
                 <TableCell><Skeleton width={160} /></TableCell>
-                <TableCell><Skeleton width={80} /></TableCell>
                 <TableCell><Skeleton width={240} /></TableCell>
                 <TableCell><Skeleton width={240} /></TableCell>
                 <TableCell align="right"><Skeleton width={80} /></TableCell>
@@ -53,9 +51,8 @@ export default function CandidateTable({ items, loading, onEdit, onDelete }: Can
                   <Avatar src={c.photoUrl} sx={{ width: 32, height: 32 }} />
                 </TableCell>
                 <TableCell>{c.name}</TableCell>
-                <TableCell>{c.year}</TableCell>
-                <TableCell>{truncate(c.vision)}</TableCell>
-                <TableCell>{truncate(c.mission)}</TableCell>
+                  <TableCell>{truncate(c.vision)}</TableCell>
+                  <TableCell>{truncate(c.mission)}</TableCell>
                 <TableCell align="right">
                   <Tooltip title="Edit">
                     <Button size="small" variant="text" onClick={() => onEdit(c.id)} sx={{ mr: 1 }}>Edit</Button>

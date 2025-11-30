@@ -32,7 +32,6 @@ export default function CandidateForm({ title = 'Kandidat', initialValues, loadi
       vision: initialValues?.vision ?? '',
       mission: initialValues?.mission ?? '',
       photoFile: initialValues?.photoFile ?? null,
-      year: (initialValues?.year as number | undefined) ?? new Date().getFullYear(),
       electionId: initialValues?.electionId ?? '',
     },
   });
@@ -50,7 +49,6 @@ export default function CandidateForm({ title = 'Kandidat', initialValues, loadi
       vision: initialValues?.vision ?? '',
       mission: initialValues?.mission ?? '',
       photoFile: null,
-      year: (initialValues?.year as number | undefined) ?? new Date().getFullYear(),
       electionId: initialValues?.electionId ?? '',
     });
     setPreviewUrl(initialValues?.photoUrl);
@@ -97,15 +95,6 @@ export default function CandidateForm({ title = 'Kandidat', initialValues, loadi
           fullWidth
         />
 
-        <TextField
-          label="Tahun"
-          type="number"
-          inputProps={{ min: 2000, max: 2100 }}
-          {...register('year', { valueAsNumber: true })}
-          error={!!errors.year}
-          helperText={errors.year?.message}
-          fullWidth
-        />
 
         <TextField
           label="Visi"

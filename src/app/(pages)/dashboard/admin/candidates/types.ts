@@ -4,8 +4,7 @@ export type Candidate = {
   name: string;
   vision?: string;
   mission?: string;
-  photoUrl?: string; 
-  year: number;
+  photoUrl?: string;
   electionId: string;
   rtId: string;
 };
