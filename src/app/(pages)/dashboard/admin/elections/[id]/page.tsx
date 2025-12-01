@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { getElectionDetail, updateElectionStatus, Election } from "../api";
+import { getElectionDetail, updateElectionStatus, finalizeElection, Election } from "../api";
 import { useToast } from "@/providers/toast-provider";
 import { Box, Typography, Paper, Stack, Chip, Button } from "@mui/material";
 
@@ -16,6 +16,20 @@ export default function ElectionDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [finalizing, setFinalizing] = useState(false);
+  const handleFinalize = async () => {
+    if (!id) return;
+    setFinalizing(true);
+    try {
+      await finalizeElection(id);
+      toast.success("Pemilihan berhasil difinalisasi");
+      fetchDetail();
+    } catch {
+      toast.error("Gagal finalize pemilihan");
+    } finally {
+      setFinalizing(false);
+    }
+  };
 
   const fetchDetail = () => {
     if (!id) return;
@@ -68,12 +82,23 @@ export default function ElectionDetailPage() {
             <Button
               variant="contained"
               color={election.status === "active" ? "primary" : "success"}
-              sx={{ mt: 2 }}
+              sx={{ mt: 2, mr: 2 }}
               onClick={handleUpdateStatus}
               disabled={updating}
             >
               {election.status === "active" ? "Akhiri Pemilihan" : "Aktifkan Pemilihan"}
             </Button>
+            {election.status === "ended" && (
+              <Button
+                variant="contained"
+                color="warning"
+                sx={{ mt: 2 }}
+                onClick={handleFinalize}
+                disabled={finalizing}
+              >
+                {finalizing ? "Memproses..." : "Finalize Pemilihan"}
+              </Button>
+            )}
           </Stack>
         </Paper>
       ) : null}

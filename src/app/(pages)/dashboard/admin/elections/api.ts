@@ -40,3 +40,8 @@ export async function createElection(data: CreateElectionInput) {
   };
   return axiosPrivate.post("/elections", payload).then(res => res.data);
 }
+
+export async function finalizeElection(id: number | string) {
+  const res = await axiosPrivate.post(`/elections/${id}/finalize`);
+  return res.data;
+}
