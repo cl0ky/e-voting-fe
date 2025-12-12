@@ -11,6 +11,7 @@ interface Election {
   name: string;
   year: number;
   status: "active" | "ended";
+  endAt?: string | null;
 }
 
 interface VoterElectionProps {
@@ -35,7 +36,7 @@ export async function revealVote() {
 
 const VoterElection: React.FC<VoterElectionProps> = ({ election, hasCommitted, hasRevealed }) => {
   const [revealLoading, setRevealLoading] = useState(false);
-  const [revealMsg, setRevealMsg] = useState<string|null>(null);
+  const [revealMsg, setRevealMsg] = useState<string | null>(null);
   // 1. Tidak ada pemilihan aktif
   if (!election) {
     return (
@@ -46,6 +47,7 @@ const VoterElection: React.FC<VoterElectionProps> = ({ election, hasCommitted, h
             boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.10)',
             borderRadius: 6,
             p: { xs: 3, sm: 6 },
+            mx: 2,
             textAlign: 'center',
             maxWidth: 420,
             width: '100%',
@@ -71,6 +73,7 @@ const VoterElection: React.FC<VoterElectionProps> = ({ election, hasCommitted, h
             boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.10)',
             borderRadius: 6,
             p: { xs: 3, sm: 6 },
+            mx: 2,
             textAlign: 'center',
             maxWidth: 420,
             width: '100%',
@@ -97,6 +100,15 @@ const VoterElection: React.FC<VoterElectionProps> = ({ election, hasCommitted, h
 
   // 3. Voter sudah commit, pemilihan masih active
   if (election.status === "active" && hasCommitted) {
+    const revealTime = election.endAt
+      ? new Date(election.endAt).toLocaleString("id-ID", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+      : null;
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh" sx={{ background: '#ebf3ff' }}>
         <Box
@@ -105,6 +117,7 @@ const VoterElection: React.FC<VoterElectionProps> = ({ election, hasCommitted, h
             boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.10)',
             borderRadius: 6,
             p: { xs: 3, sm: 6 },
+            mx: 2,
             textAlign: 'center',
             maxWidth: 420,
             width: '100%',
@@ -115,6 +128,11 @@ const VoterElection: React.FC<VoterElectionProps> = ({ election, hasCommitted, h
           <Typography color="#3b5998" fontSize={18} fontWeight={500}>
             Suara Anda telah dikunci. Menunggu pemilihan ditutup untuk reveal.
           </Typography>
+          {revealTime && (
+            <Typography mt={2} color="#5a6e8c" fontSize={14}>
+              Anda dapat melakukan reveal setelah: <strong>{revealTime}</strong>
+            </Typography>
+          )}
         </Box>
       </Box>
     );
@@ -150,6 +168,7 @@ const VoterElection: React.FC<VoterElectionProps> = ({ election, hasCommitted, h
             boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.10)',
             borderRadius: 6,
             p: { xs: 3, sm: 6 },
+            mx: 2,
             textAlign: 'center',
             maxWidth: 420,
             width: '100%',
@@ -190,6 +209,7 @@ const VoterElection: React.FC<VoterElectionProps> = ({ election, hasCommitted, h
             boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.10)',
             borderRadius: 6,
             p: { xs: 3, sm: 6 },
+            mx: 2,
             textAlign: 'center',
             maxWidth: 420,
             width: '100%',

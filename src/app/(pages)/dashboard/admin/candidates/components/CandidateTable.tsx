@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, Button, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
+import { Avatar, Box, Button, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
 import type { Candidate } from '../types';
 
 export type CandidateTableProps = {
@@ -26,7 +26,7 @@ export default function CandidateTable({ items, loading, onEdit, onDelete }: Can
             <TableCell>Nama</TableCell>
             <TableCell>Visi</TableCell>
             <TableCell>Misi</TableCell>
-            <TableCell align="right">Aksi</TableCell>
+            <TableCell align="center">Aksi</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -51,15 +51,21 @@ export default function CandidateTable({ items, loading, onEdit, onDelete }: Can
                   <Avatar src={c.photoUrl} sx={{ width: 32, height: 32 }} />
                 </TableCell>
                 <TableCell>{c.name}</TableCell>
-                  <TableCell>{truncate(c.vision)}</TableCell>
-                  <TableCell>{truncate(c.mission)}</TableCell>
-                <TableCell align="right">
-                  <Tooltip title="Edit">
-                    <Button size="small" variant="text" onClick={() => onEdit(c.id)} sx={{ mr: 1 }}>Edit</Button>
-                  </Tooltip>
-                  <Tooltip title="Hapus">
-                    <Button size="small" color="error" variant="text" onClick={() => onDelete(c.id)}>Hapus</Button>
-                  </Tooltip>
+                <TableCell>{truncate(c.vision)}</TableCell>
+                <TableCell>
+                  {c.mission?.split(/\r?\n/).map((line, index) => (
+                    <div key={index}>{truncate(line)}</div>
+                  ))}
+                </TableCell>
+                <TableCell align="center">
+                  <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
+                    <Tooltip title="Edit">
+                      <Button size="small" variant="text" onClick={() => onEdit(c.id)}>Edit</Button>
+                    </Tooltip>
+                    <Tooltip title="Hapus">
+                      <Button size="small" color="error" variant="text" onClick={() => onDelete(c.id)}>Hapus</Button>
+                    </Tooltip>
+                  </Box>
                 </TableCell>
               </TableRow>
             ))

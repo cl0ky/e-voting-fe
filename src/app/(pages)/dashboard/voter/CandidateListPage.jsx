@@ -113,7 +113,7 @@ const CandidateListPage = ({ electionId }) => {
             return (
               <Grid item xs={12} key={candidate.id} width="80%">
                 <Card sx={{
-                  widthw: '100%',
+                  width: '100%',
                   my: 2,
                   borderRadius: 3,
                   boxShadow: 3,
@@ -123,9 +123,15 @@ const CandidateListPage = ({ electionId }) => {
                 }}>
                   <CardMedia
                     component="img"
-                    height="220"
                     image={photoUrl || "/assets/img/blockchain-voting.png"}
                     alt={candidate.name}
+                    sx={{
+                      width: "100%",
+                      height: "auto",
+                      maxHeight: 260,
+                      objectFit: "fill",
+                      backgroundColor: "#f5f5f5",
+                    }}
                   />
                   <CardContent sx={{ flexGrow: 1, px: 3, py: 2 }}>
                     <Typography variant="h6" fontWeight={600} gutterBottom>
@@ -140,9 +146,14 @@ const CandidateListPage = ({ electionId }) => {
                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                       Misi:
                     </Typography>
-                    <Typography variant="body2">
-                      {candidate.mission}
-                    </Typography>
+                    {candidate.mission
+                      ?.split(/\r?\n/)
+                      .filter((line) => line.trim().length > 0)
+                      .map((line, index) => (
+                        <Typography key={`${candidate.id}-mission-${index}`} variant="body2" gutterBottom>
+                          {line}
+                        </Typography>
+                      ))}
                   </CardContent>
                   <CardActions sx={{ p: 2, pt: 0 }}>
                     <Button
