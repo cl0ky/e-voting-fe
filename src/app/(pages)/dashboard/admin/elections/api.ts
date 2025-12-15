@@ -43,6 +43,41 @@ type RawElection = {
   blockchain_tx_hash?: string;
 };
 
+type AdminDashboardSummaryRaw = {
+  total_elections?: number;
+  active_elections?: number;
+  not_finalized_elections?: number; // legacy naming
+  unfinalized_elections?: number;   // current BE naming
+  total?: number;
+  active?: number;
+  not_finalized?: number;
+};
+
+type AdminDashboardRaw = {
+  total_elections?: number;
+  active_elections?: number;
+  not_finalized_elections?: number;
+  unfinalized_elections?: number;
+  latest_elections?: RawElection[];
+  recent_elections?: RawElection[];
+  total?: number;
+  active?: number;
+  not_finalized?: number;
+  elections?: RawElection[];
+  summary?: AdminDashboardSummaryRaw;
+};
+
+export type AdminDashboardSummary = {
+  total: number;
+  active: number;
+  notFinalized: number;
+};
+
+export type AdminDashboardData = {
+  summary: AdminDashboardSummary;
+  latest: Election[];
+};
+
 function normalizeElection(raw: RawElection): Election {
   const startAt = raw.start_at ?? "";
   const year =
@@ -66,6 +101,39 @@ function normalizeElection(raw: RawElection): Election {
     summary_hash: raw.summary_hash,
     blockchain_tx_hash: raw.blockchain_tx_hash,
   };
+}
+
+export async function getAdminDashboard(): Promise<AdminDashboardData> {
+  const res = await axiosPrivate.get("/elections/admin/dashboard");
+  const raw = res.data as AdminDashboardRaw;
+
+  const summarySource: AdminDashboardSummaryRaw = raw.summary ?? raw;
+
+  const summary: AdminDashboardSummary = {
+    total:
+      summarySource.total_elections ??
+      summarySource.total ??
+      0,
+    active:
+      summarySource.active_elections ??
+      summarySource.active ??
+      0,
+    notFinalized:
+      summarySource.not_finalized_elections ??
+      summarySource.unfinalized_elections ??
+      summarySource.not_finalized ??
+      0,
+  };
+
+  const listSource: RawElection[] =
+    (raw.latest_elections && Array.isArray(raw.latest_elections) && raw.latest_elections) ||
+    (raw.recent_elections && Array.isArray(raw.recent_elections) && raw.recent_elections) ||
+    (raw.elections && Array.isArray(raw.elections) && raw.elections) ||
+    [];
+
+  const latest = listSource.map(normalizeElection);
+
+  return { summary, latest };
 }
 
 export async function getElectionDetail(id: string | number): Promise<Election> {
