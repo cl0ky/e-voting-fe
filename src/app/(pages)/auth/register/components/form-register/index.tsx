@@ -23,7 +23,7 @@ export default function FormRegister() {
     } = useForm<RegisterFormData>({
         resolver: yupResolver(registerSchema),
     });
-                    
+
     const [submitLoading, setSubmitLoading] = useState(false);
 
     const onSubmit = async (data: RegisterFormData) => {
@@ -74,7 +74,7 @@ export default function FormRegister() {
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
-            <Stack spacing={4} sx={{ maxWidth: 360, mx: "auto", mt: 10 }}>
+            <Stack spacing={4} sx={{ maxWidth: 360, mx: "auto", mt: 5 }}>
                 <Typography variant="h5" textAlign="center">
                     Pendaftaran Akun
                 </Typography>
