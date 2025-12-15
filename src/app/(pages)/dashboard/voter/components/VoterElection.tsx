@@ -98,8 +98,41 @@ const VoterElection: React.FC<VoterElectionProps> = ({ election, hasCommitted, h
     );
   }
 
-  // 3. Voter sudah commit, pemilihan masih active
-  if (election.status === "active" && hasCommitted) {
+  // 3. Voter sudah reveal (prioritaskan state ini apapun status pemilihan)
+  if (hasRevealed) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh" sx={{ background: '#ebf3ff' }}>
+        <Box
+          sx={{
+            background: 'rgba(255,255,255,0.85)',
+            boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.10)',
+            borderRadius: 6,
+            p: { xs: 3, sm: 6 },
+            mx: 2,
+            textAlign: 'center',
+            maxWidth: 420,
+            width: '100%',
+            border: '1.5px solid #d0e3fa',
+            backdropFilter: 'blur(6px)',
+          }}
+        >
+          <Typography color="#3b5998" fontSize={18} fontWeight={500} mb={3}>
+            Terima kasih, suara Anda telah direveal.
+          </Typography>
+          <Link href="/dashboard/voter/results" passHref legacyBehavior>
+            <MuiLink underline="none" sx={{ display: 'block', mt: 1 }}>
+              <Button variant="contained" size="large" fullWidth sx={{ fontWeight: 600, fontSize: 18, py: 1.5, borderRadius: 2, boxShadow: 2, background: '#2563eb', ':hover': { background: '#1d4ed8' } }}>
+                LIHAT HASIL PEMILIHAN
+              </Button>
+            </MuiLink>
+          </Link>
+        </Box>
+      </Box>
+    );
+  }
+
+  // 4. Voter sudah commit, pemilihan masih active dan belum reveal
+  if (election.status === "active" && hasCommitted && !hasRevealed) {
     const revealTime = election.endAt
       ? new Date(election.endAt).toLocaleString("id-ID", {
         day: "2-digit",
@@ -138,7 +171,7 @@ const VoterElection: React.FC<VoterElectionProps> = ({ election, hasCommitted, h
     );
   }
 
-  // 4. Pemilihan ended, voter belum reveal
+  // 5. Pemilihan ended, voter belum reveal
   if (election.status === "ended" && !hasRevealed) {
     const handleReveal = async () => {
       setRevealLoading(true);
@@ -194,39 +227,6 @@ const VoterElection: React.FC<VoterElectionProps> = ({ election, hasCommitted, h
               {revealMsg}
             </Typography>
           )}
-        </Box>
-      </Box>
-    );
-  }
-
-  // 5. Pemilihan ended, voter sudah reveal
-  if (election.status === "ended" && hasRevealed) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh" sx={{ background: '#ebf3ff' }}>
-        <Box
-          sx={{
-            background: 'rgba(255,255,255,0.85)',
-            boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.10)',
-            borderRadius: 6,
-            p: { xs: 3, sm: 6 },
-            mx: 2,
-            textAlign: 'center',
-            maxWidth: 420,
-            width: '100%',
-            border: '1.5px solid #d0e3fa',
-            backdropFilter: 'blur(6px)',
-          }}
-        >
-          <Typography color="#3b5998" fontSize={18} fontWeight={500} mb={3}>
-            Terima kasih, suara Anda telah direveal.
-          </Typography>
-          <Link href="/dashboard/voter/results" passHref legacyBehavior>
-            <MuiLink underline="none" sx={{ display: 'block', mt: 1 }}>
-              <Button variant="contained" size="large" fullWidth sx={{ fontWeight: 600, fontSize: 18, py: 1.5, borderRadius: 2, boxShadow: 2, background: '#2563eb', ':hover': { background: '#1d4ed8' } }}>
-                LIHAT HASIL PEMILIHAN
-              </Button>
-            </MuiLink>
-          </Link>
         </Box>
       </Box>
     );

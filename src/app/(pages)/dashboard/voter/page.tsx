@@ -125,7 +125,7 @@ export default function VoterDashboard() {
             <MenuItem
               onClick={() => {
                 handleMenuClose();
-                router.push('/dashboard/results');
+                router.push('/dashboard/voter/results');
               }}
             >
               Hasil Pemilihan

@@ -1,38 +1,60 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Box, Typography, Paper, LinearProgress, Chip } from "@mui/material";
+import { useRouter } from "next/navigation";
+import { Box, Typography, Paper, LinearProgress, Chip, Stack } from "@mui/material";
 import { axiosPrivate } from "@/lib";
 
-interface ResultsResponse {
-    items?: {
-        election_id?: string;
-        election_name?: string;
-        election_status?: string;
-        start_at?: string;
-        end_at?: string;
-        hasCommitted?: boolean;
-        hasRevealed?: boolean;
-        candidate_id?: string;
-        candidate_name?: string;
-        revealed_at?: string;
-    }[];
-    total?: number;
+interface ElectionItem {
+    election_id: string;
+    name: string;
+    status: string;
+    finalize_status: string;
+    start_at: string;
+    end_at: string;
+    finalized_at: string | null;
+}
+
+interface ElectionsResponse {
+    data: ElectionItem[];
+}
+
+function formatDate(iso: string | null | undefined): string {
+    if (!iso) return "-";
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "-";
+    return d.toLocaleString("id-ID", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+}
+
+function statusColor(status: string): "default" | "success" | "warning" | "error" | "info" {
+    const s = status.toLowerCase();
+    if (s === "finished" || s === "success") return "success";
+    if (s === "reveal_phase") return "info";
+    if (s === "commit_phase") return "warning";
+    if (s === "failed" || s === "error") return "error";
+    return "default";
 }
 
 export default function VoterResultsPage() {
+    const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [data, setData] = useState<ResultsResponse | null>(null);
+    const [items, setItems] = useState<ElectionItem[]>([]);
 
     useEffect(() => {
         setLoading(true);
         setError(null);
 
         axiosPrivate
-            .get("/votes/results")
+            .get<ElectionsResponse>("/elections")
             .then((res) => {
-                setData(res.data);
+                setItems(res.data?.data ?? []);
             })
             .catch((err) => {
                 const msg =
@@ -44,28 +66,11 @@ export default function VoterResultsPage() {
             .finally(() => setLoading(false));
     }, []);
 
-    const items = data?.items ?? [];
-    const first = items[0];
-
-    const electionName = first?.election_name ?? "Pemilihan";
-    const electionStatus = first?.election_status ?? "";
-    const candidateName = first?.candidate_name ?? "-";
-    const revealedAt = first?.revealed_at
-        ? new Date(first.revealed_at).toLocaleString("id-ID", {
-            day: "2-digit",
-            month: "long",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-        })
-        : null;
-
     return (
         <Box
             sx={{
                 minHeight: "100vh",
                 display: "flex",
-                alignItems: "center",
                 justifyContent: "center",
                 background:
                     "linear-gradient(135deg, #e3f2fd 0%, #bbdefb 40%, #90caf9 100%)",
@@ -76,6 +81,8 @@ export default function VoterResultsPage() {
                 sx={{
                     width: "100%",
                     maxWidth: 480,
+                    mt: 5,
+                    mb: 4,
                 }}
             >
                 <Paper
@@ -90,16 +97,16 @@ export default function VoterResultsPage() {
                     <Typography
                         variant="h6"
                         align="center"
-                        sx={{ fontWeight: 700, color: "#1d4ed8", mb: 0.5 }}
+                        sx={{ fontWeight: 700, color: "#1d4ed8", mb: 1 }}
                     >
                         Hasil Pemilihan
                     </Typography>
                     <Typography
                         align="center"
-                        sx={{ color: "#4b5563", fontSize: 14, mb: 2 }}
+                        sx={{ color: "#4b5563", fontSize: 14, mb: 3 }}
                     >
-                        {electionName}
-                        {electionStatus ? ` (${electionStatus})` : ""}
+                        Daftar pemilihan di lingkungan Anda. Ketuk salah satu kartu
+                        untuk melihat detail dan status prosesnya.
                     </Typography>
 
                     {loading && (
@@ -138,84 +145,95 @@ export default function VoterResultsPage() {
 
                     {!loading && !error && items.length > 0 && (
                         <Box sx={{ mt: 3 }}>
-                            <Typography
-                                variant="subtitle2"
-                                sx={{ color: "#6b7280", mb: 1, textAlign: "center" }}
-                            >
-                                Suara Anda telah berhasil direveal.
-                            </Typography>
-
-                            <Box
-                                sx={{
-                                    mt: 2,
-                                    p: 2,
-                                    borderRadius: 2,
-                                    border: "1px solid #d1d5db",
-                                    bgcolor: "#ffffff",
-                                }}
-                            >
-                                <Typography
-                                    sx={{
-                                        fontSize: 13,
-                                        color: "#6b7280",
-                                        mb: 0.5,
-                                    }}
-                                >
-                                    Pemilihan
-                                </Typography>
-                                <Typography
-                                    sx={{
-                                        fontWeight: 600,
-                                        color: "#111827",
-                                        mb: 1.5,
-                                    }}
-                                >
-                                    {electionName}
-                                </Typography>
-
-                                <Typography
-                                    sx={{
-                                        fontSize: 13,
-                                        color: "#6b7280",
-                                        mb: 0.5,
-                                    }}
-                                >
-                                    Kandidat pilihan Anda
-                                </Typography>
-                                <Box
-                                    sx={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "space-between",
-                                        mb: 1.5,
-                                    }}
-                                >
-                                    <Typography
+                            <Stack spacing={2.5}>
+                                {items.map((item) => (
+                                    <Box
+                                        key={item.election_id}
                                         sx={{
-                                            fontWeight: 600,
-                                            color: "#111827",
+                                            borderRadius: 2.5,
+                                            border: "1px solid #d1d5db",
+                                            p: 2,
+                                            bgcolor: "#ffffff",
+                                            boxShadow: "0 4px 10px rgba(15,23,42,0.06)",
+                                            cursor: "pointer",
+                                            transition:
+                                                "transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease",
+                                            "&:hover": {
+                                                transform: "translateY(-3px)",
+                                                boxShadow: "0 10px 25px rgba(15,23,42,0.12)",
+                                                borderColor: "#60a5fa",
+                                            },
                                         }}
+                                        onClick={() =>
+                                            router.push(
+                                                `/dashboard/voter/results/${encodeURIComponent(
+                                                    item.election_id,
+                                                )}`,
+                                            )
+                                        }
                                     >
-                                        {candidateName}
-                                    </Typography>
-                                    <Chip
-                                        color="primary"
-                                        size="small"
-                                        label="Pilihan Anda"
-                                    />
-                                </Box>
+                                        <Box
+                                            sx={{
+                                                display: "flex",
+                                                justifyContent: "space-between",
+                                                alignItems: "flex-start",
+                                                gap: 1.5,
+                                                mb: 1.5,
+                                            }}
+                                        >
+                                            <Box>
+                                                <Typography sx={{ fontWeight: 600, color: "#111827" }}>
+                                                    {item.name}
+                                                </Typography>
+                                            </Box>
+                                            <Box sx={{ textAlign: "right" }}>
+                                                <Chip
+                                                    size="small"
+                                                    label={item.status}
+                                                    color={statusColor(item.status)}
+                                                    sx={{
+                                                        mr: 0.5,
+                                                        textTransform: "capitalize",
+                                                    }}
+                                                />
+                                                <Chip
+                                                    size="small"
+                                                    label={`finalize: ${item.finalize_status}`}
+                                                    color={statusColor(item.finalize_status)}
+                                                    sx={{ textTransform: "capitalize" }}
+                                                />
+                                            </Box>
+                                        </Box>
 
-                                {revealedAt && (
-                                    <Typography
-                                        sx={{
-                                            fontSize: 13,
-                                            color: "#6b7280",
-                                        }}
-                                    >
-                                        Direveal pada: <strong>{revealedAt}</strong>
-                                    </Typography>
-                                )}
-                            </Box>
+                                        <Typography
+                                            sx={{ fontSize: 13, color: "#4b5563", mt: 0.25 }}
+                                        >
+                                            Mulai: <strong>{formatDate(item.start_at)}</strong>
+                                        </Typography>
+                                        <Typography
+                                            sx={{ fontSize: 13, color: "#4b5563", mt: 0.25 }}
+                                        >
+                                            Selesai: <strong>{formatDate(item.end_at)}</strong>
+                                        </Typography>
+                                        <Typography
+                                            sx={{ fontSize: 13, color: "#4b5563", mt: 0.25 }}
+                                        >
+                                            Finalized: <strong>{formatDate(item.finalized_at)}</strong>
+                                        </Typography>
+                                        <Typography
+                                            sx={{
+                                                mt: 1.2,
+                                                fontSize: 12,
+                                                color: "#2563eb",
+                                                fontWeight: 500,
+                                                textAlign: "right",
+                                            }}
+                                        >
+                                            Lihat detail pemilihan →
+                                        </Typography>
+                                    </Box>
+                                ))}
+                            </Stack>
                         </Box>
                     )}
                 </Paper>
