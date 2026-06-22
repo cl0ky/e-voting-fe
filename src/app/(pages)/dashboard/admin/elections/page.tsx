@@ -45,10 +45,10 @@ export default function AdminElectionsPage() {
       ) : (
         <ElectionsTable
           elections={elections?.map(e => ({
-            id: e.id,
+            id: typeof e.id === "string" ? parseInt(e.id) : e.id,
             year: e.year,
             name: e.name,
-            status: e.status,
+            status: (e.status as "active" | "ended"),
             start: e.start_at ? new Date(e.start_at).toLocaleDateString("id-ID") : "",
             end: e.end_at ? new Date(e.end_at).toLocaleDateString("id-ID") : "",
           }))}
